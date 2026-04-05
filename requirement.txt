@@ -79,3 +79,91 @@ REQUIREMENTS:
   result-service.url=http://result-service
 
 Generate all files with complete code.
+
+
+
+ Application URL
+Base URL: http://localhost:3000
+Framework: Next.js 14.2.4 with TypeScript
+Database: SQLite (development) / PostgreSQL (production-ready schema)
+🔐 Authentication & Login Methods
+Admin/Teacher Login
+Endpoint: POST /api/auth
+Payload: { action: 'login', email, password }
+Credentials:
+Email: admin@example.com
+Password: Admin@123
+Response: JWT token + user info
+Parent Login
+Endpoint: POST /api/parents/login
+Payload: { email, password }
+Sample Credentials:
+Email: john.johnson@example.com
+Password: Parent@123
+Response: JWT token + user info
+📡 API Endpoints
+Authentication APIs
+POST /api/auth - Admin login/register (action: 'login' or 'register')
+Admin/Teacher APIs
+GET /api/dashboard - Get dashboard statistics
+GET /api/students - Get all students
+POST /api/students - Add new student
+DELETE /api/students?id={id} - Delete student
+GET /api/attendance - Get all attendance records
+PATCH /api/attendance - Update attendance status
+GET /api/exam - Get exam questions
+POST /api/exam - Submit exam answers
+GET /api/results - Get all exam results
+Parent APIs
+POST /api/parents/register - Parent registration
+POST /api/parents/login - Parent login
+POST /api/parents/link-student - Link parent to student
+GET /api/parents/{parentId}/students - Get linked students
+GET /api/parents/{parentId}/attendance/{studentId} - Get student attendance
+GET /api/parents/{parentId}/results/{studentId} - Get student results
+🖥️ Frontend Pages/Routes
+Admin Pages
+/ - Home/Dashboard
+/login - Admin login
+/dashboard - Admin dashboard
+/students - Student management
+/attendance - Attendance management
+/exam - Exam management
+/results - Results view
+Parent Pages
+/parents/register - Parent registration
+/parents/login - Parent login
+/parents/dashboard - Parent dashboard
+/parents/link-student - Link students to parent
+🔧 Services & Data
+Data Services (In-Memory)
+Users Service: Admin/teacher accounts
+Students Service: Student information
+Parents Service: Parent accounts
+Student-Parent Service: Parent-student relationships
+Attendance Service: Attendance records
+Exam Service: Exam questions and submissions
+Results Service: Exam results
+External Dependencies
+JWT Authentication: jsonwebtoken
+Password Hashing: bcryptjs
+HTTP Client: axios
+Database ORM: Prisma (configured for SQLite/PostgreSQL)
+UI Framework: Tailwind CSS
+📊 Sample Data
+Students
+Emma Johnson (A102, Grade 10)
+Noah Williams (B204, Grade 11)
+Olivia Brown (C308, Grade 12)
+Parents
+John Johnson (linked to Emma Johnson)
+Attendance Records
+Present/Absent/Late status for each student
+Exam Questions
+Multiple choice questions with answers
+🚀 Available Scripts
+npm run dev - Start development server
+npm run build - Build for production
+npm start - Start production server
+npm run lint - Run ESLint
+The application is fully functional with both admin and parent portals, secure JWT authentication, and comprehensive student management features. All endpoints include proper validation, error handling, and timeout logic as specified in the requirements.

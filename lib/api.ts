@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AttendanceRecord, DashboardStats, ExamQuestion, Result, Student, AuthResponse } from '@/lib/types';
+import type { AttendanceRecord, DashboardStats, ExamQuestion, Result, Student, AuthResponse, Parent } from '@/lib/types';
 
 const api = axios.create({
   baseURL: '/api',
@@ -15,6 +15,43 @@ export async function login(email: string, password: string): Promise<AuthRespon
 
 export async function register(name: string, email: string, password: string): Promise<void> {
   await api.post('/auth', { action: 'register', name, email, password });
+}
+
+export async function parentRegister(name: string, email: string, password: string): Promise<{ parentId: string }> {
+  const response = await api.post('/parents/register', { name, email, password });
+  return response.data;
+}
+
+export async function parentLogin(email: string, password: string): Promise<AuthResponse> {
+  const response = await api.post('/parents/login', { email, password });
+  return response.data;
+}
+
+export async function linkStudent(token: string, studentId: string): Promise<void> {
+  await api.post('/parents/link-student', { studentId }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function getParentAttendance(token: string, parentId: string, studentId: string): Promise<AttendanceRecord[]> {
+  const response = await api.get(`/parents/${parentId}/attendance/${studentId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+}
+
+export async function getParentResults(token: string, parentId: string, studentId: string): Promise<Result[]> {
+  const response = await api.get(`/parents/${parentId}/results/${studentId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+}
+
+export async function getParentStudents(token: string, parentId: string): Promise<Student[]> {
+  const response = await api.get(`/parents/${parentId}/students`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
 }
 
 export async function getDashboard(): Promise<DashboardStats> {

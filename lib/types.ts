@@ -13,6 +13,19 @@ export type Student = {
   email: string;
 };
 
+export type Parent = {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+};
+
+export type StudentParent = {
+  id: string;
+  studentId: string;
+  parentId: string;
+};
+
 export type AttendanceRecord = {
   id: string;
   studentName: string;

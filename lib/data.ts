@@ -1,4 +1,4 @@
-import type { AttendanceRecord, ExamQuestion, Result, Student, User } from '@/lib/types';
+import type { AttendanceRecord, ExamQuestion, Result, Student, User, Parent, StudentParent } from '@/lib/types';
 
 export const users: User[] = [
   {
@@ -13,6 +13,23 @@ export const students: Student[] = [
   { id: 's1', name: 'Emma Johnson', roll: 'A102', grade: '10', email: 'emma.johnson@example.com' },
   { id: 's2', name: 'Noah Williams', roll: 'B204', grade: '11', email: 'noah.williams@example.com' },
   { id: 's3', name: 'Olivia Brown', roll: 'C308', grade: '12', email: 'olivia.brown@example.com' },
+];
+
+export const parents: Parent[] = [
+  {
+    id: 'p1',
+    name: 'John Johnson',
+    email: 'john.johnson@example.com',
+    password: '$2a$10$hashedpassword', // bcrypt hash for 'Parent@123'
+  },
+];
+
+export const studentParents: StudentParent[] = [
+  {
+    id: 'sp1',
+    studentId: 's1',
+    parentId: 'p1',
+  },
 ];
 
 export const attendance: AttendanceRecord[] = [

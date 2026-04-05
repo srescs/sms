@@ -34,3 +34,48 @@ COMPONENTS:
 - Sidebar
 - Table
 - Form
+REQUIREMENTS:
+
+1. FEATURES:
+- Parent registration & login (JWT-based)
+- Link parent to student(s)
+- View student attendance summary
+- View marks/grades summary
+- Secure access (parent can only see linked students)
+
+2. INTEGRATION:
+- Fetch attendance from Attendance Service (REST call)
+- Fetch marks from Result Service (REST call)
+- Use WebClient for API calls
+- Include timeout and retry logic
+
+3. API ENDPOINTS:
+- POST /parents/register
+- POST /parents/login
+- POST /parents/link-student
+- GET /parents/{parentId}/attendance/{studentId}
+- GET /parents/{parentId}/results/{studentId}
+
+4. DATABASE:
+- Parent table
+- Student-Parent mapping table
+- Use PostgreSQL with JPA
+
+5. SECURITY:
+- JWT authentication
+- Role: PARENT
+- Validate parent-student mapping before data access
+
+6. BEST PRACTICES:
+- Layered architecture (Controller → Service → Repository)
+- DTO usage
+- Exception handling
+- Validation annotations
+
+7. CONFIG:
+- External service URLs configurable
+- Example:
+  attendance-service.url=http://attendance-service
+  result-service.url=http://result-service
+
+Generate all files with complete code.

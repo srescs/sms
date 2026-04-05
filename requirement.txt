@@ -1,0 +1,36 @@
+Generate a production-ready Next.js 14 application for a Student Management System with:
+
+FEATURES:
+1. Authentication (Login/Register)
+2. Dashboard
+3. Student Management
+4. Attendance Management
+5. Online Exam UI
+6. Results Page
+
+TECH STACK:
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+- Axios for API calls
+
+REQUIREMENTS:
+- Use reusable components
+- Use clean folder structure
+- Use API service layer (lib/api.ts)
+- Responsive UI
+- Basic form validation
+
+PAGES:
+- /login
+- /dashboard
+- /students
+- /attendance
+- /exam
+- /results
+
+COMPONENTS:
+- Navbar
+- Sidebar
+- Table
+- Form

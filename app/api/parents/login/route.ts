@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { parents } from '@/lib/data';
+import { prisma } from '@/lib/prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -13,8 +13,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
     }
 
-    const parent = parents.find((item) => item.email === email);
-
+    const parent = await prisma.parent.findUnique({ where: { email } });
     if (!parent) {
       return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
     }
@@ -27,7 +26,7 @@ export async function POST(req: Request) {
     const token = jwt.sign(
       { id: parent.id, email: parent.email, role: 'PARENT' },
       JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '4h' }
     );
 
     return NextResponse.json({
@@ -36,6 +35,7 @@ export async function POST(req: Request) {
         id: parent.id,
         name: parent.name,
         email: parent.email,
+        role: 'PARENT',
       },
     });
   } catch (error) {

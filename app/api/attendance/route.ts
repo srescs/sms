@@ -1,18 +1,45 @@
 import { NextResponse } from 'next/server';
-import { attendance } from '@/lib/data';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
-  return NextResponse.json(attendance);
+  const attendance = await prisma.attendanceRecord.findMany({
+    orderBy: { date: 'desc' },
+    include: { student: true },
+  });
+
+  return NextResponse.json(
+    attendance.map((record) => ({
+      id: record.id,
+      studentId: record.studentId,
+      studentName: record.student.name,
+      date: record.date.toISOString(),
+      status: record.status,
+      createdAt: record.createdAt.toISOString(),
+      updatedAt: record.updatedAt.toISOString(),
+    }))
+  );
 }
 
 export async function PATCH(req: Request) {
-  const body = await req.json();
-  const record = attendance.find((item) => item.id === body.id);
+  try {
+    const body = await req.json();
+    const record = await prisma.attendanceRecord.update({
+      where: { id: body.id },
+      data: { status: body.status },
+      include: { student: true },
+    });
 
-  if (!record) {
+    return NextResponse.json({
+      id: record.id,
+      studentId: record.studentId,
+      studentName: record.student.name,
+      date: record.date.toISOString(),
+      status: record.status,
+      createdAt: record.createdAt.toISOString(),
+      updatedAt: record.updatedAt.toISOString(),
+    });
+  } catch (error) {
+    console.error('Update attendance error:', error);
     return NextResponse.json({ message: 'Attendance record not found' }, { status: 404 });
   }
-
-  record.status = body.status;
-  return NextResponse.json(record);
 }

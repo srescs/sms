@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { students, studentParents } from '@/lib/data';
+import { prisma } from '@/lib/prisma';
 import { verifyToken, getTokenFromRequest } from '@/lib/auth';
 
 export async function GET(
@@ -17,10 +17,12 @@ export async function GET(
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const links = studentParents.filter(sp => sp.parentId === params.parentId);
-    const linkedStudents = links.map(link => students.find(s => s.id === link.studentId)).filter(Boolean);
+    const links = await prisma.studentParent.findMany({
+      where: { parentId: params.parentId },
+      include: { student: true },
+    });
 
-    return NextResponse.json(linkedStudents);
+    return NextResponse.json(links.map((link) => link.student));
   } catch (error) {
     console.error('Fetch students error:', error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });

@@ -3,6 +3,9 @@ export type User = {
   name: string;
   email: string;
   password: string;
+  role: 'ADMIN' | 'PARENT' | 'STUDENT';
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type Student = {
@@ -11,6 +14,10 @@ export type Student = {
   roll: string;
   grade: string;
   email: string;
+  password: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type Parent = {
@@ -18,6 +25,8 @@ export type Parent = {
   name: string;
   email: string;
   password: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type StudentParent = {
@@ -28,23 +37,45 @@ export type StudentParent = {
 
 export type AttendanceRecord = {
   id: string;
+  studentId: string;
   studentName: string;
   date: string;
   status: 'Present' | 'Absent' | 'Late';
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ExamQuestion = {
   id: string;
+  examId: string;
   question: string;
   options: string[];
   answer: string;
 };
 
+export type Exam = {
+  id: string;
+  title: string;
+  subject: string;
+  description?: string;
+  totalMarks: number;
+  passingMarks: number;
+  duration: number;
+  examDate: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  questions: ExamQuestion[];
+};
+
 export type Result = {
   id: string;
-  studentName: string;
+  studentId: string;
+  examId: string;
+  examTitle: string;
   score: number;
   total: number;
+  status: string;
   date: string;
 };
 
@@ -58,7 +89,9 @@ export type DashboardStats = {
 export type AuthResponse = {
   token: string;
   user: {
+    id: string;
     name: string;
     email: string;
+    role: string;
   };
 };

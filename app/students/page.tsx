@@ -11,7 +11,7 @@ import type { Student } from '@/lib/types';
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
-  const [form, setForm] = useState({ name: '', roll: '', grade: '', email: '' });
+  const [form, setForm] = useState({ name: '', roll: '', grade: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +22,7 @@ export default function StudentsPage() {
   const handleAdd = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!form.name || !form.roll || !form.grade || !form.email) {
+    if (!form.name || !form.roll || !form.grade || !form.email || !form.password) {
       setError('Please fill in all fields.');
       return;
     }
@@ -33,7 +33,7 @@ export default function StudentsPage() {
     try {
       const added = await addStudent(form);
       setStudents((current) => [...current, added]);
-      setForm({ name: '', roll: '', grade: '', email: '' });
+      setForm({ name: '', roll: '', grade: '', email: '', password: '' });
     } catch {
       setError('Unable to add student.');
     } finally {
@@ -64,6 +64,7 @@ export default function StudentsPage() {
               <FormInput label="Roll" name="roll" value={form.roll} onChange={(value) => setForm((prev) => ({ ...prev, roll: value }))} placeholder="Roll number" />
               <FormInput label="Grade" name="grade" value={form.grade} onChange={(value) => setForm((prev) => ({ ...prev, grade: value }))} placeholder="Grade level" />
               <FormInput label="Email" name="email" type="email" value={form.email} onChange={(value) => setForm((prev) => ({ ...prev, email: value }))} placeholder="Contact email" />
+              <FormInput label="Password" name="password" type="password" value={form.password} onChange={(value) => setForm((prev) => ({ ...prev, password: value }))} placeholder="Temporary password" />
               {error ? <p className="text-sm text-red-600">{error}</p> : null}
               <button
                 type="submit"

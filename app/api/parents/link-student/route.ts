@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { parents, students, studentParents } from '@/lib/data';
+import { prisma } from '@/lib/prisma';
 import { verifyToken, getTokenFromRequest } from '@/lib/auth';
 
 export async function POST(req: Request) {
@@ -15,25 +15,27 @@ export async function POST(req: Request) {
     }
 
     const { studentId } = await req.json();
-
     if (!studentId) {
       return NextResponse.json({ message: 'Student ID is required' }, { status: 400 });
     }
 
-    const student = students.find(s => s.id === studentId);
+    const student = await prisma.student.findUnique({ where: { id: studentId } });
     if (!student) {
       return NextResponse.json({ message: 'Student not found' }, { status: 404 });
     }
 
-    const existingLink = studentParents.find(sp => sp.studentId === studentId && sp.parentId === payload.id);
+    const existingLink = await prisma.studentParent.findUnique({
+      where: { studentId_parentId: { studentId, parentId: payload.id } },
+    });
     if (existingLink) {
       return NextResponse.json({ message: 'Student already linked' }, { status: 409 });
     }
 
-    studentParents.push({
-      id: `sp${studentParents.length + 1}`,
-      studentId,
-      parentId: payload.id,
+    await prisma.studentParent.create({
+      data: {
+        studentId,
+        parentId: payload.id,
+      },
     });
 
     return NextResponse.json({ message: 'Student linked successfully' });

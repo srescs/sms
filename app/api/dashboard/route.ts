@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
-import { attendance, results, students } from '@/lib/data';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
+  const [studentsCount, attendanceCount, pendingExamCount, resultsCount] = await Promise.all([
+    prisma.student.count(),
+    prisma.attendanceRecord.count(),
+    prisma.exam.count({ where: { examDate: { gte: new Date() } } }),
+    prisma.examResult.count(),
+  ]);
+
   return NextResponse.json({
-    students: students.length,
-    attendance: attendance.length,
-    pendingExam: 1,
-    results: results.length,
+    students: studentsCount,
+    attendance: attendanceCount,
+    pendingExam: pendingExamCount,
+    results: resultsCount,
   });
 }

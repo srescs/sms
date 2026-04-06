@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
-import { students, studentParents } from '@/lib/data';
+import { prisma } from '@/lib/prisma';
 import { verifyToken, getTokenFromRequest } from '@/lib/auth';
 
 export async function GET(
@@ -18,36 +17,33 @@ export async function GET(
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if parent is linked to student
-    const link = studentParents.find(sp => sp.studentId === params.studentId && sp.parentId === params.parentId);
+    const link = await prisma.studentParent.findUnique({
+      where: { studentId_parentId: { studentId: params.studentId, parentId: params.parentId } },
+    });
     if (!link) {
       return NextResponse.json({ message: 'Access denied' }, { status: 403 });
     }
 
-    // Fetch results from Result Service
-    const resultsResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/results`, {
-      timeout: 5000, // 5 seconds timeout
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    const results = await prisma.examResult.findMany({
+      where: { studentId: params.studentId },
+      include: { exam: true },
+      orderBy: { createdAt: 'desc' },
     });
 
-    const allResults = resultsResponse.data as { id: string; studentName: string; score: number; total: number; date: string }[];
-
-    // Filter by student
-    const student = students.find(s => s.id === params.studentId);
-    if (!student) {
-      return NextResponse.json({ message: 'Student not found' }, { status: 404 });
-    }
-
-    const studentResults = allResults.filter(result => result.studentName === student.name);
-
-    return NextResponse.json(studentResults);
+    return NextResponse.json(
+      results.map((result) => ({
+        id: result.id,
+        studentId: result.studentId,
+        examId: result.examId,
+        examTitle: result.exam.title,
+        score: result.obtained,
+        total: result.total,
+        status: result.status,
+        date: result.createdAt.toISOString(),
+      }))
+    );
   } catch (error) {
     console.error('Fetch results error:', error);
-    if (axios.isAxiosError(error)) {
-      return NextResponse.json({ message: 'Results service unavailable' }, { status: 503 });
-    }
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
-import { students, studentParents } from '@/lib/data';
+import { prisma } from '@/lib/prisma';
 import { verifyToken, getTokenFromRequest } from '@/lib/auth';
 
 export async function GET(
@@ -18,36 +17,32 @@ export async function GET(
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if parent is linked to student
-    const link = studentParents.find(sp => sp.studentId === params.studentId && sp.parentId === params.parentId);
+    const link = await prisma.studentParent.findUnique({
+      where: { studentId_parentId: { studentId: params.studentId, parentId: params.parentId } },
+    });
     if (!link) {
       return NextResponse.json({ message: 'Access denied' }, { status: 403 });
     }
 
-    // Fetch attendance from Attendance Service
-    const attendanceResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/attendance`, {
-      timeout: 5000, // 5 seconds timeout
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    const attendance = await prisma.attendanceRecord.findMany({
+      where: { studentId: params.studentId },
+      include: { student: true },
+      orderBy: { date: 'desc' },
     });
 
-    const allAttendance = attendanceResponse.data as { id: string; studentName: string; date: string; status: string }[];
-
-    // Filter by student
-    const student = students.find(s => s.id === params.studentId);
-    if (!student) {
-      return NextResponse.json({ message: 'Student not found' }, { status: 404 });
-    }
-
-    const studentAttendance = allAttendance.filter(record => record.studentName === student.name);
-
-    return NextResponse.json(studentAttendance);
+    return NextResponse.json(
+      attendance.map((record) => ({
+        id: record.id,
+        studentId: record.studentId,
+        studentName: record.student.name,
+        date: record.date.toISOString(),
+        status: record.status,
+        createdAt: record.createdAt.toISOString(),
+        updatedAt: record.updatedAt.toISOString(),
+      }))
+    );
   } catch (error) {
     console.error('Fetch attendance error:', error);
-    if (axios.isAxiosError(error)) {
-      return NextResponse.json({ message: 'Attendance service unavailable' }, { status: 503 });
-    }
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }

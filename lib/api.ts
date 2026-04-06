@@ -8,6 +8,7 @@ import type {
   Student,
   AuthResponse,
   Parent,
+  LinkRequest,
 } from '@/lib/types';
 
 const api = axios.create({
@@ -66,6 +67,19 @@ export async function getParentStudents(token: string, parentId: string): Promis
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
+}
+
+export async function getPendingLinkRequests(token: string): Promise<LinkRequest[]> {
+  const response = await api.get('/parents/link-requests', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+}
+
+export async function approveLinkRequest(token: string, requestId: string): Promise<void> {
+  await api.patch('/parents/link-requests', { requestId, action: 'approve' }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
 
 export async function getStudentAttendance(token: string, studentId: string): Promise<AttendanceRecord[]> {

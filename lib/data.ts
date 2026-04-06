@@ -66,6 +66,10 @@ export const studentParents: StudentParent[] = [
     id: 'sp1',
     studentId: 's1',
     parentId: 'p1',
+    status: 'approved',
+    requestedAt: now,
+    approvedAt: now,
+    approvedBy: 'u1',
   },
 ];
 

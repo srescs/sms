@@ -10,6 +10,7 @@ export default function LinkStudent() {
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -38,10 +39,11 @@ export default function LinkStudent() {
 
     try {
       await linkStudent(token, selectedStudentId);
-      alert('Student linked successfully');
-      router.push('/parents/dashboard');
+      setSuccess('Link request submitted. Waiting for admin approval.');
+      setError('');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to link student');
+      setSuccess('');
     } finally {
       setLoading(false);
     }
@@ -66,6 +68,7 @@ export default function LinkStudent() {
         </select>
 
         {error && <div className="text-red-600 mt-2">{error}</div>}
+        {success && <div className="text-green-600 mt-2">{success}</div>}
 
         <button
           onClick={handleLink}

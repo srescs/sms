@@ -58,6 +58,9 @@ async function main() {
     data: {
       studentId: student1.id,
       parentId: parent1.id,
+      status: 'approved',
+      approvedAt: new Date(),
+      approvedBy: admin.id,
     },
   })
 
@@ -65,6 +68,9 @@ async function main() {
     data: {
       studentId: student2.id,
       parentId: parent2.id,
+      status: 'approved',
+      approvedAt: new Date(),
+      approvedBy: admin.id,
     },
   })
 

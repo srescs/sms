@@ -33,6 +33,22 @@ export type StudentParent = {
   id: string;
   studentId: string;
   parentId: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requestedAt: string;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+};
+
+export type LinkRequest = {
+  id: string;
+  studentId: string;
+  studentName: string;
+  parentId: string;
+  parentName: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requestedAt: string;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
 };
 
 export type AttendanceRecord = {

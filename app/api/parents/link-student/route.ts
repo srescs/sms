@@ -28,13 +28,14 @@ export async function POST(req: Request) {
       where: { studentId_parentId: { studentId, parentId: payload.id } },
     });
     if (existingLink) {
-      return NextResponse.json({ message: 'Student already linked' }, { status: 409 });
+      return NextResponse.json({ message: 'Student already linked or pending approval' }, { status: 409 });
     }
 
     await prisma.studentParent.create({
       data: {
         studentId,
         parentId: payload.id,
+        status: 'pending',
       },
     });
 

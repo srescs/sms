@@ -18,7 +18,7 @@ export async function GET(
     }
 
     const links = await prisma.studentParent.findMany({
-      where: { parentId: params.parentId },
+      where: { parentId: params.parentId, status: 'approved' },
       include: { student: true },
     });
 

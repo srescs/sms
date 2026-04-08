@@ -11,11 +11,25 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(cuid())
-  name     String
-  email    String @unique
-  password String
-  role     String @default("ADMIN")
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  password    String
+  role        String   @default("ADMIN")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  lastLogin   DateTime?
+
+  // Relations
+  userRoles       UserRole[]
+  auditLogs       AuditLog[]
+  students        Student[]
+  parents         Parent[]
+  exams           Exam[]
+  attendanceRecords AttendanceRecord[]
+  studentParents  StudentParent[]
 }
 
 model Student {
@@ -28,9 +42,16 @@ model Student {
   createdBy       String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  sectionId       String?
+  classId         String?
+
+  // Relations
   parents         StudentParent[]
   attendanceRecords AttendanceRecord[]
   examResults     ExamResult[]
+  creator         User @relation(fields: [createdBy], references: [id])
+  section         Section? @relation(fields: [sectionId], references: [id])
+  class           Class? @relation(fields: [classId], references: [id])
 }
 
 model Parent {
@@ -40,7 +61,11 @@ model Parent {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  createdBy String?
+
+  // Relations
   students  StudentParent[]
+  creator   User? @relation(fields: [createdBy], references: [id])
 }
 
 model StudentParent {
@@ -54,6 +79,7 @@ model StudentParent {
 
   student     Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   parent      Parent  @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  approver    User? @relation(fields: [approvedBy], references: [id])
 
   @@unique([studentId, parentId])
 }
@@ -61,7 +87,7 @@ model StudentParent {
 model Exam {
   id            String         @id @default(cuid())
   title         String
-  subject       String
+  subjectName   String         // Renamed from subject to avoid conflict
   description   String?
   totalMarks    Int
   passingMarks  Int
@@ -70,8 +96,15 @@ model Exam {
   createdBy     String
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  subjectId     String?
+  classId       String?
+
+  // Relations
   questions     ExamQuestion[]
   results       ExamResult[]
+  creator       User @relation(fields: [createdBy], references: [id])
+  subject       Subject? @relation(fields: [subjectId], references: [id])
+  class         Class? @relation(fields: [classId], references: [id])
 }
 
 model ExamQuestion {
@@ -105,7 +138,253 @@ model AttendanceRecord {
   status    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  createdBy String?
+
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  creator   User? @relation(fields: [createdBy], references: [id])
 
   @@unique([studentId, date])
+}
+
+// Admin Models
+
+model Institution {
+  id          String   @id @default(cuid())
+  name        String
+  logo        String?
+  address     String
+  phone       String?
+  email       String?
+  website     String?
+  board       String?
+  affiliation String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  campuses    Campus[]
+  departments Department[]
+}
+
+model Campus {
+  id            String   @id @default(cuid())
+  name          String
+  address       String
+  institutionId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  departments   Department[]
+}
+
+model Department {
+  id            String   @id @default(cuid())
+  name          String
+  code          String   @unique
+  description   String?
+  institutionId String?
+  campusId      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+  campus        Campus? @relation(fields: [campusId], references: [id])
+  courses       Course[]
+}
+
+model Course {
+  id           String   @id @default(cuid())
+  name         String
+  code         String   @unique
+  description  String?
+  departmentId String
+  duration     Int      // in years
+  type         String   // Degree, Certification, etc.
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  classes      Class[]
+}
+
+model Class {
+  id        String   @id @default(cuid())
+  name      String
+  level     Int      // grade level
+  courseId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  course     Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  sections   Section[]
+  subjects   SubjectClass[]
+  students   Student[]
+  exams      Exam[]
+}
+
+model Section {
+  id        String   @id @default(cuid())
+  name      String   // A, B, C, etc.
+  classId   String
+  capacity  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  class     Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  students  Student[]
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  classes     SubjectClass[]
+  exams       Exam[]
+}
+
+model SubjectClass {
+  id        String @id @default(cuid())
+  subjectId String
+  classId   String
+  createdAt DateTime @default(now())
+
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  class     Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([subjectId, classId])
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userRoles   UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  resource    String   // e.g., "student", "exam", "attendance"
+  action      String   // e.g., "create", "read", "update", "delete"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  roles       RolePermission[]
+}
+
+model UserRole {
+  id     String @id @default(cuid())
+  userId String
+  roleId String
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model RolePermission {
+  id           String @id @default(cuid())
+  roleId       String
+  permissionId String
+
+  role        Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model AcademicYear {
+  id        String   @id @default(cuid())
+  name      String   // e.g., "2024-2025"
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  terms      Term[]
+  holidays   Holiday[]
+  events     Event[]
+}
+
+model Term {
+  id             String   @id @default(cuid())
+  name           String   // e.g., "Semester 1", "Term 1"
+  academicYearId String
+  startDate      DateTime
+  endDate        DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+}
+
+model Holiday {
+  id             String   @id @default(cuid())
+  name           String
+  date           DateTime
+  type           String   // public, institution
+  description    String?
+  academicYearId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+}
+
+model Event {
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  date           DateTime
+  type           String   // exam, activity, deadline
+  academicYearId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // create, update, delete, login, etc.
+  resource  String   // table/model name
+  resourceId String?
+  details   String?  // JSON string of changes
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user      User? @relation(fields: [userId], references: [id])
+}
+
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  type  String // string, number, boolean, json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
